@@ -6,8 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -35,11 +33,11 @@ public class Signup {
     @Column(name = "createdat")
     private LocalDateTime createdat;
 
-    public Signup(SignupRequest signupRequest){
-        this.loginID = signupRequest.loginID();
-        this.password = signupRequest.password();
-        this.role = signupRequest.role();
-        this.name = signupRequest.name();
+    public Signup(String loginID, String encodedPassword, String role, String name){
+        this.loginID = loginID;
+        this.password = encodedPassword;
+        this.role = role;
+        this.name = name;
         this.createdat = LocalDateTime.now();
     }
 }

@@ -32,8 +32,6 @@ public class SignupService {
 
         String encodedpassword = passwordEncoderBCrypt.encode(signupRequest.password());
 
-        SignupRequest encodedRequest = new SignupRequest(signupRequest.loginID(), encodedpassword, signupRequest.role(), signupRequest.name());
-
-        signupRepository.save(new Signup(encodedRequest));
+        signupRepository.save(new Signup(signupRequest.loginID(), encodedpassword, signupRequest.role(), signupRequest.name()));
     }
 }

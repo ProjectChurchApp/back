@@ -1,6 +1,5 @@
 package com.church.app.Security.config;
 
-import com.church.app.signup.utils.PasswordEncoderBCrypt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
