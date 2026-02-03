@@ -5,12 +5,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PasswordEncoderBCrypt {
-    private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder encoder;
+    public PasswordEncoderBCrypt(BCryptPasswordEncoder encoder) {
+        this.encoder = encoder;
+    }
 
     /**
      * 비밀번호 암호화
      */
-    public static String encode(CharSequence rawPassword) throws PasswordEncodeException {
+    public String encode(CharSequence rawPassword) throws PasswordEncodeException {
         try {
             return encoder.encode(rawPassword);
         } catch (Exception e) {

@@ -15,7 +15,10 @@ public class PasswordValidator {
             "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
 
     // 정규식을 미리 컴파일 (성능 최적화)
-    private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
+    private final Pattern pattern;
+    public PasswordValidator() {
+        this.pattern = Pattern.compile(PASSWORD_PATTERN);
+    }
 
     public boolean isValid(String password) {
         if (password == null || password.isEmpty()) {

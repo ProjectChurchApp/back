@@ -30,7 +30,7 @@ public class SignupService {
 
         passwordValidator.validate(signupRequest.password());
 
-        String encodedpassword = PasswordEncoderBCrypt.encode(signupRequest.password());
+        String encodedpassword = passwordEncoderBCrypt.encode(signupRequest.password());
 
         SignupRequest encodedRequest = new SignupRequest(signupRequest.loginID(), encodedpassword, signupRequest.role(), signupRequest.name());
 
