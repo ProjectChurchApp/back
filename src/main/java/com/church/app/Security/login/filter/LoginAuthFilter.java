@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -26,9 +27,8 @@ public class LoginAuthFilter extends AbstractAuthenticationProcessingFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        ObjectMapper mapper = new ObjectMapper();
 
-        LoginRequest loginRequest = mapper.readValue(request.getInputStream(), LoginRequest.class);
+        LoginRequest loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 loginRequest.loginID(),
@@ -41,7 +41,12 @@ public class LoginAuthFilter extends AbstractAuthenticationProcessingFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
             String loginID = authResult.getName();
-            String role = authResult.getAuthorities().toString();
+
+            String role = authResult.getAuthorities().stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .orElse("ROLE_ANONYMOUS");
+
             SecurityContextHolder.getContext().setAuthentication(authResult);
 
             response.setStatus(HttpServletResponse.SC_OK);
