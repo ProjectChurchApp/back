@@ -73,7 +73,7 @@ public class LoginAuthFilter extends AbstractAuthenticationProcessingFilter {
              response.addCookie(refreshTokenCookie);
 
             LoginResponse loginResponse = new LoginResponse(
-                    true,"로그인 성공", loginID,role,accessToken
+                    true,"로그인 성공", loginID,role,accessToken,refreshToken
             );
 
             response.getWriter().write(objectMapper.writeValueAsString(loginResponse));
@@ -86,7 +86,7 @@ public class LoginAuthFilter extends AbstractAuthenticationProcessingFilter {
             response.setContentType("application/json; charset=utf-8");
 
             LoginResponse loginResponse = new LoginResponse(
-                    false,"로그인 실패"+failed.getMessage(),null,null,null
+                    false,"로그인 실패"+failed.getMessage(),null,null,null,null
             );
 
             response.getWriter().write(objectMapper.writeValueAsString(loginResponse));

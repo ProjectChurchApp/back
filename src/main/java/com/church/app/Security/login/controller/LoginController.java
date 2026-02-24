@@ -80,7 +80,8 @@ public class LoginController {
             return ResponseEntity.ok(new TokenResponse(
                     true,
                     "토큰 리프레쉬",
-                    newAccessToken
+                    newAccessToken,
+                    newRefreshToken
             ));
 
         } catch (ExpiredJwtException e) {

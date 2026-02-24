@@ -1,3 +1,3 @@
 package com.church.app.Security.login.dto;
 
-public record TokenResponse(boolean success, String message, String accessToken) {}
+public record TokenResponse(boolean success, String message, String accessToken,String refreshToken) {}
