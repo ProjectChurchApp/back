@@ -25,7 +25,7 @@ public class JwtUtils {
 
     // accessToken 15분
     @Value("${jwt.access-expiration}")
-    private int accessTokenExpiration;
+    private long accessTokenExpiration;
 
     // RefreshToken 14일
     @Value("${jwt.refresh-expiration}")

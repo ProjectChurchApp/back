@@ -7,10 +7,13 @@ import com.church.app.Security.login.dto.TokenResponse;
 import com.church.app.Security.login.service.RefreshTokenService;
 import com.church.app.Security.login.service.UserDetailServiceImpl;
 import com.church.app.Security.login.utils.JwtUtils;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,10 +37,11 @@ public class LoginController {
 
         // Cookie에서 Refresh Token 추출
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
+        if (cookies == null || cookies.length == 0) {
             return ResponseEntity.status(401)
                     .body(new ErrorResponse("리프레쉬 토큰 없음"));
         }
+
 
         String refreshToken = Arrays.stream(cookies)
                 .filter(cookie -> "refreshToken".equals(cookie.getName()))
@@ -79,10 +83,13 @@ public class LoginController {
                     newAccessToken
             ));
 
+        } catch (ExpiredJwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse("세션이 만료되었습니다. 다시 로그인하세요."));
+        } catch (SecurityException | MalformedJwtException e) {
+            // 토큰 해킹 시도 가능성
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse("유효하지 않은 접근입니다."));
         } catch (Exception e) {
-
-            return ResponseEntity.status(401)
-                    .body(new ErrorResponse(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("서버 오류가 발생했습니다."));
         }
     }
 

@@ -29,7 +29,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (path.equals("/auth/login") || path.equals("/auth/signup")) {
+        if (path.equals("/auth/login") || path.equals("/auth/signup") || path.equals("/auth/refresh")) {
             filterChain.doFilter(request, response);
             return;
         }
