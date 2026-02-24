@@ -41,14 +41,14 @@ public class LoginAuthFilter extends AbstractAuthenticationProcessingFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
             String loginID = authResult.getName();
-
+            String role = authResult.getAuthorities().toString();
             SecurityContextHolder.getContext().setAuthentication(authResult);
 
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("application/json; charset=utf-8");
 
             LoginResponse loginResponse = new LoginResponse(
-                    true,"로그인 성공", loginID,null
+                    true,"로그인 성공", loginID,role,null
             );
 
             response.getWriter().write(objectMapper.writeValueAsString(loginResponse));
@@ -61,7 +61,7 @@ public class LoginAuthFilter extends AbstractAuthenticationProcessingFilter {
             response.setContentType("application/json; charset=utf-8");
 
             LoginResponse loginResponse = new LoginResponse(
-                    false,"로그인 실패"+failed.getMessage(),null,null
+                    false,"로그인 실패"+failed.getMessage(),null,null,null
             );
 
             response.getWriter().write(objectMapper.writeValueAsString(loginResponse));
