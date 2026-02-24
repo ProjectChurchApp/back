@@ -25,7 +25,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
         User user = userRepository.findByLoginID(loginID)
                 .orElseThrow(() -> {
-                    System.out.println("사용자를 찾을 수 없음: " + loginID);
+                    //
                     return new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + loginID);
                 });
 
