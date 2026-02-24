@@ -1,6 +1,5 @@
 package com.church.app.signup.entity;
 
-import com.church.app.signup.dto.SignupRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(name = "user")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Signup {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -33,7 +32,7 @@ public class Signup {
     @Column(name = "createdat")
     private LocalDateTime createdat;
 
-    public Signup(String loginID, String encodedPassword, String role, String name){
+    public User(String loginID, String encodedPassword, String role, String name){
         this.loginID = loginID;
         this.password = encodedPassword;
         this.role = role;
