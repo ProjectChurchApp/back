@@ -1,6 +1,7 @@
 package com.church.app.signup.controller;
 
 import com.church.app.signup.dto.SignupRequest;
+import com.church.app.signup.dto.SignupResponse;
 import com.church.app.signup.service.SignupService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,9 @@ public class SignupController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@RequestBody SignupRequest signupRequest){
+    public ResponseEntity<SignupResponse> signup(@RequestBody SignupRequest signupRequest){
         signupService.signup(signupRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new SignupResponse(true, "회원가입이 완료되었습니다."));
     }
 }
