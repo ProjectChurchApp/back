@@ -4,6 +4,7 @@ import com.church.app.board.dto.BoardRequestDto;
 import com.church.app.board.dto.BoardResponseDto;
 import com.church.app.board.entity.Board;
 import com.church.app.board.repository.BoardRepository;
+import com.church.app.notification.service.PushNotificationService;
 import com.church.app.signup.entity.User;
 import com.church.app.signup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,20 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    // 기존 필드에 추가
+    private final PushNotificationService pushNotificationService;
 
     public void createBoard(BoardRequestDto dto, String loginID) {
         User user = userRepository.findByLoginID(loginID)
                 .orElseThrow(() -> new RuntimeException("유저 없음"));
 
         boardRepository.save(new Board(dto.getTitle(), dto.getContents(), user));
+
+        // 게시글 작성 시 전체 푸시 전송
+        pushNotificationService.sendToAll(
+                "새 게시글 ✉️",
+                user.getName() + ": " + dto.getTitle()
+        );
     }
 
     public List<BoardResponseDto> getAllBoardsDesc() {
