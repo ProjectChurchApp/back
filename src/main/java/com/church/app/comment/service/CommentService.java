@@ -6,7 +6,10 @@ import com.church.app.comment.dto.CommentRequestDto;
 import com.church.app.comment.dto.CommentResponseDto;
 import com.church.app.comment.entity.Comment;
 import com.church.app.comment.repository.CommentRepository;
+import com.church.app.common.exception.ForbiddenActionException;
+import com.church.app.common.exception.ResourceNotFoundException;
 import com.church.app.notification.service.PushNotificationService;
+import com.church.app.signup.entity.Role;
 import com.church.app.signup.entity.User;
 import com.church.app.signup.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -78,13 +81,19 @@ public class CommentService {
         comment.update(dto.getContents());
     }
 
-    // 댓글 삭제
+    // 댓글 삭제 (본인 또는 활성 목사)
     public void deleteComment(Long commentId, String loginID) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("댓글 없음"));
+                .orElseThrow(() -> new ResourceNotFoundException("댓글 없음"));
 
-        if (!comment.getUser().getLoginID().equals(loginID)) {
-            throw new RuntimeException("삭제 권한 없음");
+        User user = userRepository.findByLoginID(loginID)
+                .orElseThrow(() -> new ResourceNotFoundException("유저 없음"));
+
+        boolean isOwner = comment.getUser().getLoginID().equals(loginID);
+        boolean isActivePastor = user.getRole() == Role.PASTOR && user.isActive();
+
+        if (!isOwner && !isActivePastor) {
+            throw new ForbiddenActionException("삭제 권한 없음");
         }
 
         commentRepository.delete(comment);

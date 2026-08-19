@@ -12,6 +12,7 @@ public class BoardResponseDto {
     private String title;
     private String contents;
     private String writerName;
+    private String writerLoginID;
     private String status;
     private LocalDateTime createdDate;
 
@@ -20,6 +21,7 @@ public class BoardResponseDto {
         this.title = board.getTitle();
         this.contents = board.getContents();
         this.writerName = board.getUser().getName();
+        this.writerLoginID = board.getUser().getLoginID();
         this.status = board.getStatus().name();
         this.createdDate = board.getCreatedDate();
     }

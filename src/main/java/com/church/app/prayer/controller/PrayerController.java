@@ -2,10 +2,13 @@ package com.church.app.prayer.controller;
 
 import com.church.app.prayer.dto.PrayerCommentRequestDto;
 import com.church.app.prayer.dto.PrayerCommentResponseDto;
+import com.church.app.prayer.dto.PrayerPrayResponseDto;
 import com.church.app.prayer.dto.PrayerRequestDto;
 import com.church.app.prayer.dto.PrayerResponseDto;
+import com.church.app.prayer.dto.PrayerStatusUpdateDto;
 import com.church.app.prayer.service.PrayerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +21,16 @@ public class PrayerController {
 
     private final PrayerService prayerService;
 
-    // 목록 조회
+    // 목록 조회 (나의기도: 본인 전체 / 목사: 연결된 성도의 공유분)
     @GetMapping
     public List<PrayerResponseDto> list(Authentication authentication) {
         return prayerService.getPrayers(authentication.getName());
+    }
+
+    // 중보기도 게시판 (전체 열람)
+    @GetMapping("/intercessory")
+    public List<PrayerResponseDto> intercessory(Authentication authentication) {
+        return prayerService.getIntercessoryPrayers(authentication.getName());
     }
 
     // 상세 조회
@@ -46,6 +55,29 @@ public class PrayerController {
         return "수정 완료";
     }
 
+    // 상태 변경 (기도중/응답/종료)
+    @PutMapping("/{id}/status")
+    public String updateStatus(@PathVariable Long id,
+                                @RequestBody PrayerStatusUpdateDto dto,
+                                Authentication authentication) {
+        prayerService.updateStatus(id, dto.status(), authentication.getName());
+        return "상태 변경 완료";
+    }
+
+    // 중보기도로 공유 (목사 전용)
+    @PostMapping("/{id}/promote")
+    @PreAuthorize("hasAuthority('ROLE_PASTOR')")
+    public String promote(@PathVariable Long id, Authentication authentication) {
+        prayerService.promote(id, authentication.getName());
+        return "중보기도로 공유 완료";
+    }
+
+    // 기도했어요 토글
+    @PostMapping("/{id}/pray")
+    public PrayerPrayResponseDto pray(@PathVariable Long id, Authentication authentication) {
+        return prayerService.togglePray(id, authentication.getName());
+    }
+
     // 삭제
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id, Authentication authentication) {
@@ -55,8 +87,8 @@ public class PrayerController {
 
     // 댓글 목록
     @GetMapping("/{id}/comments")
-    public List<PrayerCommentResponseDto> getComments(@PathVariable Long id) {
-        return prayerService.getComments(id);
+    public List<PrayerCommentResponseDto> getComments(@PathVariable Long id, Authentication authentication) {
+        return prayerService.getComments(id, authentication.getName());
     }
 
     // 댓글 작성

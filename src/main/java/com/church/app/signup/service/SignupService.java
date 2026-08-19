@@ -1,6 +1,7 @@
 package com.church.app.signup.service;
 
 import com.church.app.signup.dto.SignupRequest;
+import com.church.app.signup.entity.Role;
 import com.church.app.signup.entity.User;
 import com.church.app.signup.repository.UserRepository;
 import com.church.app.signup.utils.PasswordEncoderBCrypt;
@@ -22,8 +23,17 @@ public class SignupService {
 
     public void signup(SignupRequest signupRequest){
         String loginID = signupRequest.loginID();
-        String password = signupRequest.password();
-        String role = signupRequest.role();
+
+        Role role;
+        try {
+            role = Role.fromLabel(signupRequest.role());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("올바르지 않은 역할입니다: " + signupRequest.role());
+        }
+
+        if (role == Role.ADMIN) {
+            throw new IllegalArgumentException("관리자는 회원가입으로 생성할 수 없습니다.");
+        }
 
         if(userRepository.existsByloginID(loginID)){
             throw new IllegalArgumentException(("이미 존재하는 아이디입니다 : " + loginID));
@@ -33,6 +43,6 @@ public class SignupService {
 
         String encodedpassword = passwordEncoder.encode(signupRequest.password());
 
-        userRepository.save(new User(signupRequest.loginID(), encodedpassword, signupRequest.role(), signupRequest.name()));
+        userRepository.save(new User(signupRequest.loginID(), encodedpassword, role, signupRequest.name()));
     }
 }
