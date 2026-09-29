@@ -28,4 +28,7 @@ public interface PrayerRepository extends JpaRepository<Prayer, Long> {
     // 중보기도 게시판: 해당 목사님이 승격한 글만 (목사님 그룹 단위로 열람)
     List<Prayer> findAllByBoardStageAndPromotedByOrderByCreatedDateDesc(Prayer.BoardStage boardStage,
                                                                         User promotedBy);
+
+    // 중보기도 게시판: 전체 (관리자 열람용)
+    List<Prayer> findAllByBoardStageOrderByCreatedDateDesc(Prayer.BoardStage boardStage);
 }

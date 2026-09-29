@@ -80,18 +80,23 @@ public class PrayerService {
                 .toList();
     }
 
-    // ── 중보기도 게시판 조회 (연결된 목사님 그룹 안에서만) ──
+    // ── 중보기도 게시판 조회 (연결된 목사님 그룹 안에서만, 관리자는 전체) ──
     public List<PrayerResponseDto> getIntercessoryPrayers(String loginID) {
         User user = findUser(loginID);
 
-        User groupPastor = resolveGroupPastor(user);
-        if (groupPastor == null) {
-            return List.of();
+        List<Prayer> prayers;
+        if (user.getRole() == Role.ADMIN) {
+            prayers = prayerRepository.findAllByBoardStageOrderByCreatedDateDesc(Prayer.BoardStage.INTERCESSORY);
+        } else {
+            User groupPastor = resolveGroupPastor(user);
+            if (groupPastor == null) {
+                return List.of();
+            }
+            prayers = prayerRepository.findAllByBoardStageAndPromotedByOrderByCreatedDateDesc(
+                    Prayer.BoardStage.INTERCESSORY, groupPastor);
         }
 
-        return prayerRepository
-                .findAllByBoardStageAndPromotedByOrderByCreatedDateDesc(Prayer.BoardStage.INTERCESSORY, groupPastor)
-                .stream()
+        return prayers.stream()
                 .map(p -> new PrayerResponseDto(p, hasPrayed(p, user)))
                 .toList();
     }
@@ -291,10 +296,15 @@ public class PrayerService {
                 && isConnectedPastorOf(user, prayer.getUser());
 
         boolean isIntercessoryInMyGroup = false;
-        if (prayer.getBoardStage() == Prayer.BoardStage.INTERCESSORY && prayer.getPromotedBy() != null) {
-            User groupPastor = resolveGroupPastor(user);
-            isIntercessoryInMyGroup = groupPastor != null
-                    && prayer.getPromotedBy().getLoginID().equals(groupPastor.getLoginID());
+        if (prayer.getBoardStage() == Prayer.BoardStage.INTERCESSORY) {
+            if (user.getRole() == Role.ADMIN) {
+                // 관리자는 운영 확인을 위해 모든 그룹의 중보기도를 열람할 수 있다 (관리 권한은 없음)
+                isIntercessoryInMyGroup = true;
+            } else if (prayer.getPromotedBy() != null) {
+                User groupPastor = resolveGroupPastor(user);
+                isIntercessoryInMyGroup = groupPastor != null
+                        && prayer.getPromotedBy().getLoginID().equals(groupPastor.getLoginID());
+            }
         }
 
         if (!isOwner && !isConnectedPastor && !isIntercessoryInMyGroup) {
