@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "prayer_pray_log", uniqueConstraints = @UniqueConstraint(columnNames = {"prayer_id", "user_id"}))
+@Table(name = "prayer_pray_log")
 public class PrayerPrayLog {
 
     @Id

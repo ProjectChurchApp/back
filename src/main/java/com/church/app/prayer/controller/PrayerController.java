@@ -27,7 +27,7 @@ public class PrayerController {
         return prayerService.getPrayers(authentication.getName());
     }
 
-    // 중보기도 게시판 (전체 열람)
+    // 중보기도 게시판 (연결된 목사님 그룹 내 열람)
     @GetMapping("/intercessory")
     public List<PrayerResponseDto> intercessory(Authentication authentication) {
         return prayerService.getIntercessoryPrayers(authentication.getName());
@@ -72,10 +72,10 @@ public class PrayerController {
         return "중보기도로 공유 완료";
     }
 
-    // 기도했어요 토글
+    // 기도했어요 (누를 때마다 누적)
     @PostMapping("/{id}/pray")
     public PrayerPrayResponseDto pray(@PathVariable Long id, Authentication authentication) {
-        return prayerService.togglePray(id, authentication.getName());
+        return prayerService.pray(id, authentication.getName());
     }
 
     // 삭제

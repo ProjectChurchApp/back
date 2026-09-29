@@ -25,6 +25,7 @@ public interface PrayerRepository extends JpaRepository<Prayer, Long> {
                                           @Param("stage") Prayer.BoardStage stage,
                                           @Param("connectionStatus") PastorConnection.Status connectionStatus);
 
-    // 중보기도 게시판: 승격된 글 전체 (모든 인증 사용자 열람 가능)
-    List<Prayer> findAllByBoardStageOrderByCreatedDateDesc(Prayer.BoardStage boardStage);
+    // 중보기도 게시판: 해당 목사님이 승격한 글만 (목사님 그룹 단위로 열람)
+    List<Prayer> findAllByBoardStageAndPromotedByOrderByCreatedDateDesc(Prayer.BoardStage boardStage,
+                                                                        User promotedBy);
 }

@@ -10,6 +10,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,37 +41,7 @@ public class PushNotificationService {
 
     // 전체 유저에게 푸시 전송
     public void sendToAll(String title, String body) {
-        List<PushToken> tokens = pushTokenRepository.findAll();
-        if (tokens.isEmpty()) return;
-
-        List<Map<String, Object>> messages = tokens.stream()
-                .map(pt -> {
-                    Map<String, Object> msg = new HashMap<>();
-                    msg.put("to", pt.getToken());
-                    msg.put("title", title);
-                    msg.put("body", body);
-                    msg.put("sound", "default");
-                    return msg;
-                })
-                .toList();
-
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<List<Map<String, Object>>> request =
-                    new HttpEntity<>(messages, headers);
-
-            restTemplate.postForObject(
-                    "https://exp.host/--/api/v2/push/send",
-                    request,
-                    String.class
-            );
-        } catch (Exception e) {
-            // 푸시 실패해도 게시글 작성은 정상 처리
-            System.err.println("푸시 전송 실패: " + e.getMessage());
-        }
+        send(pushTokenRepository.findAll(), title, body);
     }
 
     // 특정 유저에게 푸시 전송
@@ -78,7 +49,23 @@ public class PushNotificationService {
         User user = userRepository.findByLoginID(loginID).orElse(null);
         if (user == null) return;
 
-        List<PushToken> tokens = pushTokenRepository.findAllByUser(user);
+        send(pushTokenRepository.findAllByUser(user), title, body);
+    }
+
+    // 여러 유저에게 한 번에 푸시 전송 (중보기도 그룹 등)
+    public void sendToUsers(List<String> loginIDs, String title, String body) {
+        if (loginIDs == null || loginIDs.isEmpty()) return;
+
+        List<PushToken> tokens = new ArrayList<>();
+        for (String loginID : loginIDs) {
+            userRepository.findByLoginID(loginID)
+                    .ifPresent(user -> tokens.addAll(pushTokenRepository.findAllByUser(user)));
+        }
+
+        send(tokens, title, body);
+    }
+
+    private void send(List<PushToken> tokens, String title, String body) {
         if (tokens.isEmpty()) return;
 
         List<Map<String, Object>> messages = tokens.stream()
@@ -96,9 +83,16 @@ public class PushNotificationService {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+
             HttpEntity<List<Map<String, Object>>> request = new HttpEntity<>(messages, headers);
-            restTemplate.postForObject("https://exp.host/--/api/v2/push/send", request, String.class);
+
+            restTemplate.postForObject(
+                    "https://exp.host/--/api/v2/push/send",
+                    request,
+                    String.class
+            );
         } catch (Exception e) {
+            // 푸시 실패해도 본 작업은 정상 처리
             System.err.println("푸시 전송 실패: " + e.getMessage());
         }
     }

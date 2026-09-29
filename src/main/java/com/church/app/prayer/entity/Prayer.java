@@ -49,8 +49,14 @@ public class Prayer {
     @Column(name = "status")
     private Status status;
 
+    @Column(name = "status_changed_at")
+    private LocalDateTime statusChangedAt;
+
     @Column(name = "prayer_count")
     private int prayerCount;
+
+    @Column(name = "intercessory_requested")
+    private boolean intercessoryRequested;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "promoted_by")
@@ -67,11 +73,12 @@ public class Prayer {
 
     protected Prayer() {}
 
-    public Prayer(User user, String title, String contents, Visibility visibility) {
+    public Prayer(User user, String title, String contents, Visibility visibility, boolean intercessoryRequested) {
         this.user = user;
         this.title = title;
         this.contents = contents;
         this.visibility = visibility;
+        this.intercessoryRequested = visibility == Visibility.PASTOR && intercessoryRequested;
         this.boardStage = toBoardStage(visibility);
         this.status = Status.PRAYING;
         this.prayerCount = 0;
@@ -86,18 +93,20 @@ public class Prayer {
         return this.boardStage == BoardStage.INTERCESSORY;
     }
 
-    public void update(String title, String contents, Visibility visibility) {
+    public void update(String title, String contents, Visibility visibility, boolean intercessoryRequested) {
         this.title = title;
         this.contents = contents;
         this.visibility = visibility;
         if (!isPromoted()) {
             this.boardStage = toBoardStage(visibility);
+            this.intercessoryRequested = visibility == Visibility.PASTOR && intercessoryRequested;
         }
         this.updatedDate = LocalDateTime.now();
     }
 
     public void changeStatus(Status status) {
         this.status = status;
+        this.statusChangedAt = status == Status.PRAYING ? null : LocalDateTime.now();
         this.updatedDate = LocalDateTime.now();
     }
 
@@ -109,11 +118,5 @@ public class Prayer {
 
     public void incrementPrayerCount() {
         this.prayerCount++;
-    }
-
-    public void decrementPrayerCount() {
-        if (this.prayerCount > 0) {
-            this.prayerCount--;
-        }
     }
 }

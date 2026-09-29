@@ -16,9 +16,12 @@ public class PrayerResponseDto {
     private String visibility;
     private String boardStage;
     private String status;
+    private LocalDateTime statusChangedAt;
     private int prayerCount;
     private boolean hasPrayed;
+    private boolean intercessoryRequested;
     private String promotedByName;
+    private String promotedByLoginID;
     private LocalDateTime promotedAt;
     private LocalDateTime createdDate;
 
@@ -31,9 +34,12 @@ public class PrayerResponseDto {
         this.visibility = prayer.getVisibility().name();
         this.boardStage = prayer.getBoardStage().name();
         this.status = prayer.getStatus().name();
+        this.statusChangedAt = prayer.getStatusChangedAt();
         this.prayerCount = prayer.getPrayerCount();
         this.hasPrayed = hasPrayed;
+        this.intercessoryRequested = prayer.isIntercessoryRequested();
         this.promotedByName = prayer.getPromotedBy() != null ? prayer.getPromotedBy().getName() : null;
+        this.promotedByLoginID = prayer.getPromotedBy() != null ? prayer.getPromotedBy().getLoginID() : null;
         this.promotedAt = prayer.getPromotedAt();
         this.createdDate = prayer.getCreatedDate();
     }
