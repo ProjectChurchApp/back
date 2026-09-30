@@ -116,7 +116,7 @@ public class PrayerService {
         Prayer prayer = findPrayer(id);
         User user = findUser(loginID);
 
-        requireCanManage(prayer, user);
+        requireCanEdit(prayer, user);
 
         Prayer.Visibility visibility = Prayer.Visibility.valueOf(dto.getVisibility());
         prayer.update(dto.getTitle(), dto.getContents(), visibility, dto.isIntercessoryRequested());
@@ -127,7 +127,7 @@ public class PrayerService {
         Prayer prayer = findPrayer(id);
         User user = findUser(loginID);
 
-        requireCanManage(prayer, user);
+        requireCanEdit(prayer, user);
 
         prayer.changeStatus(Prayer.Status.valueOf(status));
     }
@@ -176,7 +176,7 @@ public class PrayerService {
         Prayer prayer = findPrayer(id);
         User user = findUser(loginID);
 
-        requireCanManage(prayer, user);
+        requireCanDelete(prayer, user);
 
         prayerPrayLogRepository.deleteAllByPrayer(prayer);
         prayerRepository.delete(prayer);
@@ -312,18 +312,49 @@ public class PrayerService {
         }
     }
 
-    private void requireCanManage(Prayer prayer, User user) {
+    /**
+     * 내용 수정과 상태 변경 권한.
+     * 기도의 주인은 작성자이므로 중보기도로 올라간 뒤에도 작성자는 계속 손댈 수 있다.
+     * 목사님은 자신에게 공유된 기도(다듬어서 중보기도로 옮기기 위해)와
+     * 자신이 승격한 중보기도를 수정할 수 있다.
+     */
+    private void requireCanEdit(Prayer prayer, User user) {
+        if (prayer.getUser().getLoginID().equals(user.getLoginID())) {
+            return;
+        }
+
+        boolean isActivePastor = user.getRole() == Role.PASTOR && user.isActive();
+        if (isActivePastor) {
+            if (prayer.getBoardStage() == Prayer.BoardStage.SHARED_WITH_PASTOR
+                    && isConnectedPastorOf(user, prayer.getUser())) {
+                return;
+            }
+            if (prayer.isPromoted() && prayer.getPromotedBy() != null
+                    && prayer.getPromotedBy().getLoginID().equals(user.getLoginID())) {
+                return;
+            }
+        }
+
+        throw new ForbiddenActionException("이 기도를 수정할 권한이 없습니다.");
+    }
+
+    /**
+     * 삭제 권한.
+     * 중보기도로 올라간 뒤에는 여러 성도가 함께 기도하는 글이 되므로
+     * 작성자 한 명의 판단으로 사라지지 않도록 담당 목사님만 지울 수 있다.
+     */
+    private void requireCanDelete(Prayer prayer, User user) {
         if (prayer.isPromoted()) {
             boolean isPromotingPastor = user.getRole() == Role.PASTOR && user.isActive()
                     && prayer.getPromotedBy() != null
                     && prayer.getPromotedBy().getLoginID().equals(user.getLoginID());
             if (!isPromotingPastor) {
-                throw new ForbiddenActionException("중보기도로 공유된 기도는 담당 목사님만 관리할 수 있습니다.");
+                throw new ForbiddenActionException("중보기도로 공유된 기도는 담당 목사님만 삭제할 수 있습니다.");
             }
         } else {
             boolean isOwner = prayer.getUser().getLoginID().equals(user.getLoginID());
             if (!isOwner) {
-                throw new ForbiddenActionException("본인의 기도만 관리할 수 있습니다.");
+                throw new ForbiddenActionException("본인의 기도만 삭제할 수 있습니다.");
             }
         }
     }
