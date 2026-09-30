@@ -69,7 +69,7 @@ public class BoardService {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("게시글 없음"));
 
-        requireOwnerOrActivePastor(board, loginID);
+        requireOwner(board, loginID);
 
         board.update(dto.getTitle(), dto.getContents());
     }
@@ -78,7 +78,7 @@ public class BoardService {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("게시글 없음"));
 
-        requireOwnerOrActivePastor(board, loginID);
+        requireOwner(board, loginID);
 
         commentRepository.deleteAllByBoardId(id);
         boardRepository.delete(board);
@@ -95,13 +95,16 @@ public class BoardService {
         }
     }
 
-    private void requireOwnerOrActivePastor(Board board, String loginID) {
-        User user = findUser(loginID);
-        boolean isOwner = board.getUser().getLoginID().equals(loginID);
-        boolean isActivePastor = user.getRole() == Role.PASTOR && user.isActive();
-
-        if (!isOwner && !isActivePastor) {
-            throw new ForbiddenActionException("권한이 없습니다.");
+    /**
+     * 게시글 수정·삭제는 작성자 본인만 할 수 있다.
+     *
+     * 요구사항 문서가 목사님께 부여한 것은 "작성 권한"과 "성도 댓글 삭제"뿐이고,
+     * 다른 목사님의 공지를 지울 수 있다는 내용은 없다. 오히려 목사 권한 아이디가
+     * 여럿이라 관리체계가 모호하다는 점을 문제로 적어두었으므로 작성자로 좁힌다.
+     */
+    private void requireOwner(Board board, String loginID) {
+        if (!board.getUser().getLoginID().equals(loginID)) {
+            throw new ForbiddenActionException("본인이 쓴 글만 수정하거나 삭제할 수 있습니다.");
         }
     }
 }
