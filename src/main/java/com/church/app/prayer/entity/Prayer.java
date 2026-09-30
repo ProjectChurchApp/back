@@ -96,8 +96,10 @@ public class Prayer {
     public void update(String title, String contents, Visibility visibility, boolean intercessoryRequested) {
         this.title = title;
         this.contents = contents;
-        this.visibility = visibility;
+        // 중보기도로 올라간 뒤에는 제목과 내용만 고칠 수 있다.
+        // 공개 범위를 되돌리면 함께 기도하던 성도들 화면에서 글이 사라지기 때문이다.
         if (!isPromoted()) {
+            this.visibility = visibility;
             this.boardStage = toBoardStage(visibility);
             this.intercessoryRequested = visibility == Visibility.PASTOR && intercessoryRequested;
         }
