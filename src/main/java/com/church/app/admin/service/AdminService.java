@@ -36,9 +36,16 @@ public class AdminService {
     private static final String PW_DIGITS = "23456789";
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    /** 전체 가입자 목록. 비밀번호는 복원할 수 없으므로 포함하지 않는다. */
+    /**
+     * 가입자 목록. 비밀번호는 복원할 수 없으므로 포함하지 않는다.
+     *
+     * 탈퇴한 계정은 제외한다. 관리자가 할 수 있는 일이 없고, 사용자 입장에서는
+     * 이미 지워진 계정이다. DB 행을 남겨두는 것은 그 사람이 쓴 글과 댓글의
+     * 작성자 표시가 깨지지 않게 하기 위한 내부 사정일 뿐이다.
+     */
     public List<UserSummaryDto> getAllUsers() {
         return userRepository.findAll().stream()
+                .filter(u -> u.getAccountStatus() != AccountStatus.WITHDRAWN)
                 .map(UserSummaryDto::new)
                 .toList();
     }
