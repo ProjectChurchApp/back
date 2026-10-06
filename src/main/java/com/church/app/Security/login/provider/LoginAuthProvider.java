@@ -43,10 +43,6 @@ public class LoginAuthProvider implements AuthenticationProvider {
         User user = userRepository.findByLoginID(username)
                 .orElseThrow(() -> new BadCredentialsException("사용자가 올바르지 않습니다"));
 
-        if (user.getAccountStatus() == AccountStatus.SUSPENDED) {
-            throw new DisabledException("이용이 정지된 계정입니다. 관리자에게 문의해주세요.");
-        }
-
         if (user.getAccountStatus() == AccountStatus.WITHDRAWN) {
             throw new DisabledException("탈퇴 처리된 계정입니다.");
         }

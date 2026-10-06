@@ -50,12 +50,6 @@ public class AdminController {
         return Map.of("temporaryPassword", adminService.resetPassword(userId, authentication.getName()));
     }
 
-    @PatchMapping("/users/{userId}/suspend")
-    public String suspend(@PathVariable Integer userId, Authentication authentication) {
-        adminService.suspendUser(userId, authentication.getName());
-        return "정지 완료";
-    }
-
     /** 탈퇴 처리 — 아이디를 비워 재가입할 수 있게 한다. 글과 댓글은 남는다. */
     @DeleteMapping("/users/{userId}")
     public String withdraw(@PathVariable Integer userId, Authentication authentication) {
@@ -63,9 +57,4 @@ public class AdminController {
         return "탈퇴 처리 완료";
     }
 
-    @PatchMapping("/users/{userId}/activate")
-    public String activate(@PathVariable Integer userId, Authentication authentication) {
-        adminService.activateUser(userId, authentication.getName());
-        return "정지 해제 완료";
-    }
 }

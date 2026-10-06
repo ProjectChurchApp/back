@@ -55,16 +55,6 @@ public class User {
                 : AccountStatus.ACTIVE;
     }
 
-    /** 관리자가 계정을 정지시킨다. 글과 댓글은 지우지 않는다. */
-    public void suspend() {
-        this.accountStatus = AccountStatus.SUSPENDED;
-    }
-
-    /** 정지를 풀어 다시 쓸 수 있게 한다. */
-    public void reactivate() {
-        this.accountStatus = AccountStatus.ACTIVE;
-    }
-
     /**
      * 탈퇴 처리. 쓰던 아이디를 비우고 이름을 가린다.
      * 기도와 댓글은 그대로 두어 함께 기도하던 사람들의 기록이 사라지지 않게 한다.

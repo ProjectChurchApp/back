@@ -70,21 +70,6 @@ public class AdminService {
         return temporary;
     }
 
-    /** 계정을 정지시킨다. 작성한 글과 댓글은 남는다. */
-    public void suspendUser(Integer userId, String adminLoginID) {
-        User admin = findAdmin(adminLoginID);
-        User target = findUserById(userId);
-
-        if (target.getUserId() == admin.getUserId()) {
-            throw new IllegalArgumentException("본인 계정은 정지할 수 없습니다.");
-        }
-        if (target.getRole() == Role.ADMIN) {
-            throw new IllegalArgumentException("관리자 계정은 정지할 수 없습니다.");
-        }
-
-        target.suspend();
-    }
-
     /**
      * 탈퇴 처리. 쓰던 아이디를 비워 같은 아이디로 재가입할 수 있게 한다.
      * 글과 댓글은 "탈퇴한 사용자" 이름으로 남는다.
@@ -109,12 +94,6 @@ public class AdminService {
 
         target.withdraw("deleted_" + target.getUserId(),
                 passwordEncoder.encode(UUID.randomUUID().toString()));
-    }
-
-    /** 정지를 해제한다. */
-    public void activateUser(Integer userId, String adminLoginID) {
-        findAdmin(adminLoginID);
-        findUserById(userId).reactivate();
     }
 
     private User findUserById(Integer userId) {
