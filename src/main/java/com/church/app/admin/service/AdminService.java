@@ -3,6 +3,8 @@ package com.church.app.admin.service;
 import com.church.app.admin.dto.PastorRequestDto;
 import com.church.app.admin.dto.UserSummaryDto;
 import com.church.app.common.exception.ResourceNotFoundException;
+import com.church.app.Security.login.repository.RefreshTokenRepository;
+import com.church.app.notification.repository.PushTokenRepository;
 import com.church.app.notification.service.PushNotificationService;
 import com.church.app.signup.entity.AccountStatus;
 import com.church.app.signup.entity.Role;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.UUID;
 
 import java.util.List;
 
@@ -25,6 +28,8 @@ public class AdminService {
     private final UserRepository userRepository;
     private final PushNotificationService pushNotificationService;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final PushTokenRepository pushTokenRepository;
 
     // 임시 비밀번호에 쓰는 글자. 전화로 불러줄 수 있도록 O/0, I/l 처럼 헷갈리는 글자는 뺐다.
     private static final String PW_LETTERS = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ";
@@ -71,6 +76,32 @@ public class AdminService {
         }
 
         target.suspend();
+    }
+
+    /**
+     * 탈퇴 처리. 쓰던 아이디를 비워 같은 아이디로 재가입할 수 있게 한다.
+     * 글과 댓글은 "탈퇴한 사용자" 이름으로 남는다.
+     */
+    public void withdrawUser(Integer userId, String adminLoginID) {
+        User admin = findAdmin(adminLoginID);
+        User target = findUserById(userId);
+
+        if (target.getUserId() == admin.getUserId()) {
+            throw new IllegalArgumentException("본인 계정은 탈퇴 처리할 수 없습니다.");
+        }
+        if (target.getRole() == Role.ADMIN) {
+            throw new IllegalArgumentException("관리자 계정은 탈퇴 처리할 수 없습니다.");
+        }
+        if (target.getAccountStatus() == AccountStatus.WITHDRAWN) {
+            throw new IllegalArgumentException("이미 탈퇴 처리된 계정입니다.");
+        }
+
+        // 로그인 아이디가 바뀌면 기존 토큰을 찾을 수 없으므로 세션부터 끊는다.
+        refreshTokenRepository.deleteByLoginID(target.getLoginID());
+        pushTokenRepository.deleteAll(pushTokenRepository.findAllByUser(target));
+
+        target.withdraw("deleted_" + target.getUserId(),
+                passwordEncoder.encode(UUID.randomUUID().toString()));
     }
 
     /** 정지를 해제한다. */

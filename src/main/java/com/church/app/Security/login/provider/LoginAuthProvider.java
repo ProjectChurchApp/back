@@ -47,6 +47,10 @@ public class LoginAuthProvider implements AuthenticationProvider {
             throw new DisabledException("이용이 정지된 계정입니다. 관리자에게 문의해주세요.");
         }
 
+        if (user.getAccountStatus() == AccountStatus.WITHDRAWN) {
+            throw new DisabledException("탈퇴 처리된 계정입니다.");
+        }
+
         if (user.getRole() == Role.PASTOR && user.getAccountStatus() != AccountStatus.ACTIVE) {
             String message = user.getAccountStatus() == AccountStatus.REJECTED
                     ? "가입이 거절되었습니다. 관리자에게 문의해주세요."

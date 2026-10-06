@@ -65,6 +65,17 @@ public class User {
         this.accountStatus = AccountStatus.ACTIVE;
     }
 
+    /**
+     * 탈퇴 처리. 쓰던 아이디를 비우고 이름을 가린다.
+     * 기도와 댓글은 그대로 두어 함께 기도하던 사람들의 기록이 사라지지 않게 한다.
+     */
+    public void withdraw(String freedLoginID, String unusablePassword) {
+        this.loginID = freedLoginID;
+        this.name = "탈퇴한 사용자";
+        this.password = unusablePassword;
+        this.accountStatus = AccountStatus.WITHDRAWN;
+    }
+
     /** 관리자가 임시 비밀번호를 발급할 때 쓴다. 이미 암호화된 값을 받는다. */
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
