@@ -1,6 +1,9 @@
 package com.church.app.admin.controller;
 
 import com.church.app.admin.dto.PastorRequestDto;
+import com.church.app.admin.dto.UserSummaryDto;
+
+import java.util.Map;
 import com.church.app.admin.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,5 +35,30 @@ public class AdminController {
     public String reject(@PathVariable Integer userId, Authentication authentication) {
         adminService.rejectPastor(userId, authentication.getName());
         return "거절 완료";
+    }
+
+    // ── 가입자 관리 ──────────────────────────────────────
+
+    @GetMapping("/users")
+    public List<UserSummaryDto> users() {
+        return adminService.getAllUsers();
+    }
+
+    /** 임시 비밀번호를 발급해 한 번만 돌려준다. */
+    @PostMapping("/users/{userId}/reset-password")
+    public Map<String, String> resetPassword(@PathVariable Integer userId, Authentication authentication) {
+        return Map.of("temporaryPassword", adminService.resetPassword(userId, authentication.getName()));
+    }
+
+    @PatchMapping("/users/{userId}/suspend")
+    public String suspend(@PathVariable Integer userId, Authentication authentication) {
+        adminService.suspendUser(userId, authentication.getName());
+        return "정지 완료";
+    }
+
+    @PatchMapping("/users/{userId}/activate")
+    public String activate(@PathVariable Integer userId, Authentication authentication) {
+        adminService.activateUser(userId, authentication.getName());
+        return "정지 해제 완료";
     }
 }

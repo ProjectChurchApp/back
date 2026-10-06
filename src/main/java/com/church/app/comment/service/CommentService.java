@@ -91,8 +91,9 @@ public class CommentService {
 
         boolean isOwner = comment.getUser().getLoginID().equals(loginID);
         boolean isActivePastor = user.getRole() == Role.PASTOR && user.isActive();
+        boolean isAdmin = user.getRole() == Role.ADMIN;
 
-        if (!isOwner && !isActivePastor) {
+        if (!isOwner && !isActivePastor && !isAdmin) {
             throw new ForbiddenActionException("삭제 권한 없음");
         }
 

@@ -90,7 +90,8 @@ public class BoardService {
     }
 
     private void requireActivePastor(User user) {
-        if (user.getRole() != Role.PASTOR || !user.isActive()) {
+        boolean isActivePastor = user.getRole() == Role.PASTOR && user.isActive();
+        if (!isActivePastor && user.getRole() != Role.ADMIN) {
             throw new ForbiddenActionException("목사님만 게시글을 작성할 수 있습니다.");
         }
     }
@@ -103,8 +104,13 @@ public class BoardService {
      * 여럿이라 관리체계가 모호하다는 점을 문제로 적어두었으므로 작성자로 좁힌다.
      */
     private void requireOwner(Board board, String loginID) {
-        if (!board.getUser().getLoginID().equals(loginID)) {
-            throw new ForbiddenActionException("본인이 쓴 글만 수정하거나 삭제할 수 있습니다.");
+        if (board.getUser().getLoginID().equals(loginID)) {
+            return;
         }
+        // 관리자는 운영을 위해 모든 글을 정리할 수 있다.
+        if (findUser(loginID).getRole() == Role.ADMIN) {
+            return;
+        }
+        throw new ForbiddenActionException("본인이 쓴 글만 수정하거나 삭제할 수 있습니다.");
     }
 }

@@ -238,8 +238,9 @@ public class PrayerService {
         User user = findUser(loginID);
         boolean isOwner = comment.getUser().getLoginID().equals(loginID);
         boolean isActivePastor = user.getRole() == Role.PASTOR && user.isActive();
+        boolean isAdmin = user.getRole() == Role.ADMIN;
 
-        if (!isOwner && !isActivePastor) {
+        if (!isOwner && !isActivePastor && !isAdmin) {
             throw new ForbiddenActionException("삭제 권한 없음");
         }
 
@@ -323,6 +324,10 @@ public class PrayerService {
             return;
         }
 
+        if (user.getRole() == Role.ADMIN) {
+            return;
+        }
+
         boolean isActivePastor = user.getRole() == Role.PASTOR && user.isActive();
         if (isActivePastor) {
             if (prayer.getBoardStage() == Prayer.BoardStage.SHARED_WITH_PASTOR
@@ -344,6 +349,10 @@ public class PrayerService {
      * 작성자 한 명의 판단으로 사라지지 않도록 담당 목사님만 지울 수 있다.
      */
     private void requireCanDelete(Prayer prayer, User user) {
+        if (user.getRole() == Role.ADMIN) {
+            return;
+        }
+
         if (prayer.isPromoted()) {
             boolean isPromotingPastor = user.getRole() == Role.PASTOR && user.isActive()
                     && prayer.getPromotedBy() != null

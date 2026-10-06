@@ -55,6 +55,21 @@ public class User {
                 : AccountStatus.ACTIVE;
     }
 
+    /** 관리자가 계정을 정지시킨다. 글과 댓글은 지우지 않는다. */
+    public void suspend() {
+        this.accountStatus = AccountStatus.SUSPENDED;
+    }
+
+    /** 정지를 풀어 다시 쓸 수 있게 한다. */
+    public void reactivate() {
+        this.accountStatus = AccountStatus.ACTIVE;
+    }
+
+    /** 관리자가 임시 비밀번호를 발급할 때 쓴다. 이미 암호화된 값을 받는다. */
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
     public boolean isActive() {
         return this.accountStatus == AccountStatus.ACTIVE;
     }
