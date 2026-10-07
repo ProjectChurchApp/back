@@ -20,8 +20,15 @@ public class RefreshTokenService {
     @Transactional
     public String createRefreshToken(String loginID) {
 
-        // 사용마다 한개씩의 리프레쉬 토큰
-        refreshTokenRepository.deleteByLoginID(loginID);
+        // 예전에는 여기서 그 계정의 토큰을 전부 지웠다. 그러면 다른 기기에서 로그인하는
+        // 순간 먼저 쓰던 기기의 세션이 조용히 끊겨, 그 기기는 재발급에 실패하고
+        // 로그아웃된다. 만료된 것만 정리해 기기별 로그인이 함께 유지되도록 한다.
+        List<RefreshToken> expired = refreshTokenRepository.findByLoginID(loginID).stream()
+                .filter(RefreshToken::isExpired)
+                .toList();
+        if (!expired.isEmpty()) {
+            refreshTokenRepository.deleteAll(expired);
+        }
 
         // 새로운 리프레쉬 토큰 생성 (UUID)
         String token = jwtUtils.generateRefreshToken();
